@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.dao.AdminRoleDao">
+    <sql id="columns">
+        select id,role_id,admin_id,create_time,update_time,is_deleted
+    </sql>
+
+    <select id="findRoleIdListByAdminId" resultType="long">
+        select role_id from `acl_admin_role` where admin_id=#{adminId} and is_deleted=0
+    </select>
+
+<!--    根据管理员id和角色id查询adminrole对象-->
+    <select id="findByAdminIdAndRoleId" resultType="adminRole">
+        <include refid="columns"></include>
+        from `acl_admin_role` where admin_id = #{adminId} and role_id=#{roleId} and is_deleted=0;
+    </select>
+
+    <update id="removeAdminRole">
+        update acl_admin_role
+        set is_deleted=1
+        where admin_id=#{adminId}
+        and role_id in (
+        <foreach collection="roleIds" item="roleId" separator=",">
+            #{roleId}
+        </foreach>
+        )
+    </update>
+
+    <insert id="insert">
+        insert into acl_admin_role (role_id,admin_id) values(#{roleId},#{adminId})
+    </insert>
+
+    <update id="update">
+        update acl_admin_role
+        <set>
+            <if test="roleId !=null ||roleId !=''">
+                role_id=#{roleId},
+            </if>
+            <if test="adminId != null || adminId != ''">
+                admin_id=#{adminId},
+            </if>
+            <if test="isDeleted != null || isDeleted != '' || isDeleted == 0">
+                is_deleted=#{isDeleted},
+            </if>
+            update_time=now(),
+        </set>
+
+        where id=#{id}
+    </update>
+
+</mapper>
